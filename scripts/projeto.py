@@ -97,7 +97,6 @@ def scaneou(dado):
     global pos
     global minimo
     global maximo
-    global barreira
     
     minimo = dado.range_min
     maximo = dado.range_max
