@@ -25,7 +25,7 @@ CLASSES = ["background", "aeroplane", "bicycle", "bird", "boat",
 	"dog", "horse", "motorbike", "person", "pottedplant", "sheep",
 	"sofa", "train", "tvmonitor"]
 
-print("Categorias disponíveis; ")
+print("Categorias disponíveis: ")
 print("\n")
 print(CLASSES)
 print("\n")
@@ -41,7 +41,6 @@ while resp:
 
 
 bridge = CvBridge()
-
 cv_image = None
 follow = False
 d = None
