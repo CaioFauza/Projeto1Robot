@@ -13,7 +13,6 @@ from sensor_msgs.msg import Image, CompressedImage
 from cv_bridge import CvBridge, CvBridgeError
 import visao_module
 import cormodule
-from std_msgs.msg import UInt8
 
 
 bridge = CvBridge()
@@ -28,8 +27,6 @@ xbottle0 = 0
 xbottle1 = 0
 verde = 0
 area = 0.0 # Variavel com a area do maior contorno
-d = 0
-safe = False
 
 # Só usar se os relógios ROS da Raspberry e do Linux desktop estiverem sincronizados. 
 # Descarta imagens que chegam atrasadas demais
@@ -37,9 +34,6 @@ check_delay = False
 vel = Twist(Vector3(0,0,0), Vector3(0,0,0))
 
 
-def sensor(dado):
-    global d
-    d = dado.data
 
 # A função a seguir é chamada sempre que chega um novo frame
 def roda_todo_frame(imagem):
@@ -85,7 +79,7 @@ def roda_todo_frame(imagem):
 
     
 if __name__=="__main__":
-    rospy.init_node("projeto")
+    rospy.init_node("cor")
 
     topico_imagem = "/kamera"
     
@@ -109,90 +103,54 @@ if __name__=="__main__":
     # 
 
     recebedor = rospy.Subscriber(topico_imagem, CompressedImage, roda_todo_frame, queue_size=4, buff_size = 2**24)
+    
     pub = rospy.Publisher("/cmd_vel", Twist, queue_size = 1)
-    recebe_bump = rospy.Subscriber("/bumper", UInt8, sensor)
-
 
     try:
+
         while not rospy.is_shutdown():
-            if d != None:
-                if d == 2:
-                    pub.publish(Twist(Vector3(0, 0, 0), Vector3(0, 0, 0))) 
-                    pub.publish(Twist(Vector3(-0.1, 0, 0), Vector3(0, 0, 0.35)))
-                    rospy.sleep(3.0)
-                    pub.publish(Twist(Vector3(0, 0, 0), Vector3(0, 0, 0)))
-                    rospy.sleep(1.0)
-                    d = None
+            if bottle:
+                #print("X0 é: " + str(xbottle0))
+                #print("X1 é: " + str(xbottle1))
+                #print("Centro é: " + str(centro[0]))
                 
+                if centro[0] > xbottle0 and centro[0] < xbottle1:
+                    vel = Twist(Vector3(0.07,0,0), Vector3(0,0,0))
+                    bottle = False
 
-                if d == 1:
-                    pub.publish(Twist(Vector3(0, 0, 0), Vector3(0, 0, 0)))
-                    pub.publish(Twist(Vector3(-0.1, 0, 0), Vector3(0, 0, -0.35)))
-                    rospy.sleep(3.0)
-                    pub.publish(Twist(Vector3(0, 0, 0), Vector3(0, 0, 0)))
-                    rospy.sleep(1.0)
-                    d = None
-                    
+                if centro[0] < xbottle0:
+                    vel = Twist(Vector3(0,0,0), Vector3(0,0,-0.06))
+                    bottle = False    
 
-                if d == 3:
-                    pub.publish(Twist(Vector3(0.4, 0, 0), Vector3(0, 0, 0)))
-                    rospy.sleep(1.0)
-                    d = None
-                    
+                if centro[0] > xbottle1:
+                    vel = Twist(Vector3(0,0,0), Vector3(0,0,0.06))    
+                    bottle = False
 
-                if d == 4:
-                    pub.publish(Twist(Vector3(0.4, 0, 0), Vector3(0, 0, 0)))
-                    rospy.sleep(2.0)
-                    d = None
+
                 
+                
+            else:
+                vel = Twist(Vector3(0,0,0), Vector3(0,0,0))
             
+            if area > 0:
+                verde = True
 
-            if d == None:
-                #Seguir garrafa
-                if bottle:    
+            if verde:
+                if media[0] > (centro[0]-40) and media[0] < (centro[0]+40):
+                    vel = Twist(Vector3(-0.1,0,0), Vector3(0,0,0))
+                    verde = False
+                if media[0] < centro[0]-40:
+                    vel = Twist(Vector3(0,0,0), Vector3(0,0,0.2))
+                    verde = False
+                if media[0] > centro[0]+40:
+                    vel = Twist(Vector3(0,0,0), Vector3(0,0,-0.2))
+                    verde = False
 
-                    if centro[0] > xbottle0 and centro[0] < xbottle1:
-                        vel = Twist(Vector3(0.07,0,0), Vector3(0,0,0))
-                        bottle = False
-
-                    if centro[0] < xbottle0:
-                        vel = Twist(Vector3(0,0,0), Vector3(0,0,-0.06))
-                        bottle = False    
-
-                    if centro[0] > xbottle1:
-                        vel = Twist(Vector3(0,0,0), Vector3(0,0,0.06))    
-                        bottle = False   
-                else:
-                    vel = Twist(Vector3(0,0,0), Vector3(0,0,0))
-
-            
-                #Fugir verde
-                if area > 0:
-                    verde = True
-
-                if verde:
-                    if media[0] > (centro[0]-40) and media[0] < (centro[0]+40):
-                        vel = Twist(Vector3(-0.1,0,0), Vector3(0,0,0))
-                        verde = False
-                    if media[0] < centro[0]-40:
-                        vel = Twist(Vector3(0,0,0), Vector3(0,0,0.2))
-                        verde = False
-                    if media[0] > centro[0]+40:
-                        vel = Twist(Vector3(0,0,0), Vector3(0,0,-0.2))
-                        verde = False
-
-            #######################################################################################
-
-                pub.publish(vel)
-                rospy.sleep(1.0)
-
-            #######################################################################################
-			#Bumper
-
-            
+			
 
                     
-           
+            pub.publish(vel)
+            rospy.sleep(1.0)
             
 
             
