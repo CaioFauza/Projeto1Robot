@@ -97,22 +97,6 @@ def scaneou(dado):
     global pos
     global minimo
     global maximo
-
-    minimo = dado.range_min
-    maximo = dado.range_max
-    dmin = np.amin(np.array(dado.ranges).round(decimals=2))
-
-    pos = dado.ranges
-
-def sensor(dado):
-    global d
-    d = dado.data
-
-def scaneou(dado):
-    global dmin
-    global pos
-    global minimo
-    global maximo
     global barreira
     
     minimo = dado.range_min
