@@ -15,6 +15,7 @@ import visao_module
 import cormodule
 from std_msgs.msg import UInt8
 from sensor_msgs.msg import LaserScan
+
 import argparse
 import imutils
 from imutils.video import VideoStream
@@ -40,6 +41,7 @@ while resp:
         print("Escolha uma categotia válida.")
 
 
+
 bridge = CvBridge()
 cv_image = None
 follow = False
@@ -59,7 +61,9 @@ atraso = 1.5E9
 media = []
 centro = []
 resultados = list()
+
 pos = np.array([])
+
 
 velocidade = Twist(Vector3(0,0,0), Vector3(0,0,0))
 vel = Twist(Vector3(0,0,0), Vector3(0,0,0))
@@ -99,6 +103,25 @@ def scaneou(dado):
     dmin = np.amin(np.array(dado.ranges).round(decimals=2))
 
     pos = dado.ranges
+
+def sensor(dado):
+    global d
+    d = dado.data
+
+def scaneou(dado):
+    global dmin
+    global pos
+    global minimo
+    global maximo
+    global barreira
+    
+    minimo = dado.range_min
+    maximo = dado.range_max
+    dmin = np.amin(np.array(dado.ranges).round(decimals=2))
+
+    pos = dado.ranges
+	
+	
 
 
 def roda_todo_frame(imagem):
@@ -202,7 +225,6 @@ if __name__=="__main__":
 
     try:
         while not rospy.is_shutdown():
-            
             #Laser
             for i in range (0, len(pos)):
                 if pos[i] > minimo and pos[i] < maximo:
@@ -272,6 +294,7 @@ if __name__=="__main__":
                         continue
                         
 
+
                     #Controle proporcional angular
                     
                     if med_follow < (centro[1]):
@@ -285,6 +308,7 @@ if __name__=="__main__":
                         follow = False
                         continue
                             
+
 
                     if med_follow > (centro[1]): 
                         if (med_follow- centro[1] > 20):
