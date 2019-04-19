@@ -14,7 +14,7 @@ from cv_bridge import CvBridge, CvBridgeError
 import visao_module
 import cormodule
 from std_msgs.msg import UInt8
-
+from sensor_msgs.msg import LaserScan
 
 bridge = CvBridge()
 
@@ -28,8 +28,13 @@ xbottle0 = 0
 xbottle1 = 0
 verde = 0
 area = 0.0 # Variavel com a area do maior contorno
-d = 0
+d = None
 safe = False
+pos = np.array([])
+barreira = False
+minimo = None
+maximo = None
+velocidade = Twist(Vector3(0,0,0), Vector3(0,0,0))
 
 # Só usar se os relógios ROS da Raspberry e do Linux desktop estiverem sincronizados. 
 # Descarta imagens que chegam atrasadas demais
@@ -40,6 +45,22 @@ vel = Twist(Vector3(0,0,0), Vector3(0,0,0))
 def sensor(dado):
     global d
     d = dado.data
+
+def scaneou(dado):
+    global dmin
+    global pos
+    global minimo
+    global maximo
+    global barreira
+    
+    minimo = dado.range_min
+    maximo = dado.range_max
+    dmin = np.amin(np.array(dado.ranges).round(decimals=2))
+
+    pos = dado.ranges
+	
+	
+
 
 # A função a seguir é chamada sempre que chega um novo frame
 def roda_todo_frame(imagem):
@@ -111,15 +132,42 @@ if __name__=="__main__":
     recebedor = rospy.Subscriber(topico_imagem, CompressedImage, roda_todo_frame, queue_size=4, buff_size = 2**24)
     pub = rospy.Publisher("/cmd_vel", Twist, queue_size = 1)
     recebe_bump = rospy.Subscriber("/bumper", UInt8, sensor)
+    scan = rospy.Subscriber("/scan", LaserScan, scaneou)
 
 
     try:
         while not rospy.is_shutdown():
+            ##print(pos90)
+            for i in range (0, len(pos)):
+                if pos[i] > 0 and pos[i] < 0.18:
+                    if i <= 30:
+                        print("Frentolas")
+
+                        velocidade = Twist(Vector3(-0.1, 0, 0), Vector3(0, 0, 0))
+                                        
+
+                    if i > 30 and i <= 90:
+                        print("Lat1")
+
+                        velocidade = Twist(Vector3(-0.1, 0, 0), Vector3(0, 0, -0.35))
+                        
+                        
+                    if i > 180 and i <270:
+                        print("Lat2")
+                        
+                        velocidade = Twist(Vector3(-0.1, 0, 0), Vector3(0, 0, 0.35))
+
+           
+            pub.publish(velocidade)
+            velocidade = Twist(Vector3(0, 0, 0), Vector3(0, 0, 0))
+            rospy.sleep(1.0)        
+
             if d != None:
+                #Bumper
                 if d == 2:
                     pub.publish(Twist(Vector3(0, 0, 0), Vector3(0, 0, 0))) 
                     pub.publish(Twist(Vector3(-0.1, 0, 0), Vector3(0, 0, 0.35)))
-                    rospy.sleep(3.0)
+                    rospy.sleep(2.0)
                     pub.publish(Twist(Vector3(0, 0, 0), Vector3(0, 0, 0)))
                     rospy.sleep(1.0)
                     d = None
@@ -128,25 +176,25 @@ if __name__=="__main__":
                 if d == 1:
                     pub.publish(Twist(Vector3(0, 0, 0), Vector3(0, 0, 0)))
                     pub.publish(Twist(Vector3(-0.1, 0, 0), Vector3(0, 0, -0.35)))
-                    rospy.sleep(3.0)
+                    rospy.sleep(2.0)
                     pub.publish(Twist(Vector3(0, 0, 0), Vector3(0, 0, 0)))
                     rospy.sleep(1.0)
                     d = None
                     
 
                 if d == 3:
-                    pub.publish(Twist(Vector3(0.4, 0, 0), Vector3(0, 0, 0)))
+                    pub.publish(Twist(Vector3(0.2, 0, 0), Vector3(0, 0, 0)))
                     rospy.sleep(1.0)
                     d = None
                     
 
                 if d == 4:
-                    pub.publish(Twist(Vector3(0.4, 0, 0), Vector3(0, 0, 0)))
-                    rospy.sleep(2.0)
+                    pub.publish(Twist(Vector3(0.2, 0, 0), Vector3(0, 0, 0)))
+                    rospy.sleep(1.0)
                     d = None
-                
             
-
+        
+        
             if d == None:
                 #Seguir garrafa
                 if bottle:    
@@ -181,13 +229,10 @@ if __name__=="__main__":
                         vel = Twist(Vector3(0,0,0), Vector3(0,0,-0.2))
                         verde = False
 
-            #######################################################################################
-
                 pub.publish(vel)
                 rospy.sleep(1.0)
 
-            #######################################################################################
-			#Bumper
+            
 
             
 
