@@ -38,7 +38,7 @@ while resp:
         resp = False
         
     else:
-        print("Escolha uma categotia válida.")
+        print("Escolha uma categoria válida.")
 
 
 
