@@ -1,6 +1,6 @@
-# Projeto1Robot
-Projeto 1 - Robótica Computacional - Caio Fauza e Gustavo Braga
-Project 1 - Computational Robotics - Caio Fauza e Gustavo Braga
+# ProjetoRobot
+Projeto-  Robótica Computacional - Caio Fauza e Gustavo Braga - Insper, 2019.1
+Project - Computational Robotics - Caio Fauza e Gustavo Braga - Insper, 2019.1
 
 
 O objetivo do Projeto foi desenvolver um software para automatizar as ações de um robô em relação a uma certa rotina estabelecida. Foi utilizado ROS e Python no desenvolvimento e o robô utilizado foi o TurtleBot 3 Burger.
