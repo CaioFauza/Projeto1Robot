@@ -1,5 +1,5 @@
 # ProjetoRobot
-Projeto-  Robótica Computacional - Caio Fauza e Gustavo Braga - Insper, 2019.1
+Projeto -  Robótica Computacional - Caio Fauza e Gustavo Braga - Insper, 2019.1
 Project - Computational Robotics - Caio Fauza e Gustavo Braga - Insper, 2019.1
 
 
